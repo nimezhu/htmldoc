@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nucleserver</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li><a href="#nucleserver">NucleServer</a>
+<ul>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#more-functions-and-alternative-ways">More functions and alternative ways</a></li>
+<li><a href="#todos">TODOs</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h1 id="nucleserver">NucleServer</h1>
+<p><a href="https://travis-ci.org/nucleome/nucleserver"><img src="https://travis-ci.org/nucleome/nucleserver.svg?branch=master" alt="Build Status"></a><br>
+<a href="https://goreportcard.com/report/github.com/nucleome/nucleserver"><img src="https://goreportcard.com/badge/github.com/nucleome/nucleserver" alt="Go Report Card"></a><br>
+<a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a><br>
+<a href="https://github.com/nucleome/nucleserver"><img src="https://img.shields.io/badge/GitHub-Repository-blue.svg" alt="GitHub Repository"></a></p>
+<p><a href="http://doc.nucleome.org/data/server"><em>NucleServer</em></a> is a simple standalone tool to host an additional data server for <a href="https://vis.nucleome.org"><em>Nucleome Browser</em></a>. A typical usage is to host a set of cumtomized genome data files that is not on the default server, such as additional genome tracks in <a href="https://genome.ucsc.edu/goldenpath/help/bigWig.html">bigWig</a>, <a href="https://genome.ucsc.edu/goldenpath/help/bigBed.html">bigBed</a> and <a href="https://github.com/aidenlab/Juicebox/blob/master/HiC_format_v8.docx">.hic</a> formats. To facilitate users with limited commandline experience, we also implemented an simple GUI called <a href="https://github.com/nucleome/nucledata"><em>NucleData</em></a>. However, it’s only working for setting up a <strong>local server</strong> on a personal PC for now.</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>This is a quick demo on setting up a typical server with sample data. Please read the full manual for alternative settings not covered. To start, you can download the pre-compiled excutables from the main server (Current Build Version: 01-07-2020  v0.1.5). If they are not compatible to your machine, you can try to compile it from source (instruction in the “More functions and alternative ways” section).</p>
+<ul>
+<li><a href="https://vis.nucleome.org/static/nucleserver/current/linux/nucleserver">Linux</a></li>
+<li><a href="https://vis.nucleome.org/static/nucleserver/current/mac/nucleserver">MacOS</a></li>
+<li><a href="https://vis.nucleome.org/static/nucleserver/current/win64/nucleserver.exe">Windows</a></li>
+</ul>
+<blockquote>
+<p>If you are using Windows and not familiar with runnning command line tool in Windows, please read <a href="https://www.computerhope.com/issues/chusedos.htm">this article</a> first. Then,you can run <code>nucleserver</code> as a command line tool in terminal.</p>
+</blockquote>
+<p>As a side note, please note that you’d have to grant the excutable the correct permission. In linux/Mac, this can be done with the following shell command.</p>
+<pre><code>chmod +x nucleserver
+</code></pre>
+<p>The next step is to create an excel table for configurations. You can download a simple templete <a href="https://docs.google.com/spreadsheets/d/1nJwOozr4EL4gnx37hzF2Jmv-HPsgFMA9jN-lbUj1GvM/edit#gid=1744383077">Here</a>. Please note this google sheet can be saved in .xlsx format (now called nucle.xlsx in this demo). This excel table will point to a bigBed file host remotely by ENCODE through the Internet. If you’d like to host the data in your own server, you can download this <a href="https://www.encodeproject.org/files/ENCFF845IDA/@@download/ENCFF845IDA.bigBed">bigBed file</a> manually. And then, you can point to this local file by modifying the followings in the nucle.xlsx file.<br>
+The following command will start the data server.</p>
+<pre><code>nucleserver start -i nucle.xlsx
+</code></pre>
+<p>If you would like to add local files.</p>
+<ul>
+<li>In the Config sheet, define the root variable as a PATH to the data folder, such as <code>/home/yourusername</code>.</li>
+<li>In the “ENCODE_ChIPSeq” sheet, you can use the URL directly or change the URL to a relative PATH pointing to the bigBed file, such as <code>./ENCFF845IDA.bigBed</code>, if you download it to your local drive. If you use the URL directly, NucleServer will only fetch the index and store it in “$HOME/.nucle/index”.</li>
+</ul>
+<p>You many want to put the process in background using <strong>screen</strong> or nohup. The simple command using nohup is provided below.</p>
+<pre><code>nohup nucleserver start -i nucle.xlsx &amp;
+</code></pre>
+<p>If everthing goes fine, you should then be able to add this additional server to your browser. The URL can be the following if you are running the server at a local machine with the default 8611 port.</p>
+<pre><code>http://127.0.0.1:8611
+</code></pre>
+<blockquote>
+<p>Please note that you don’t have add this particular URL. The localhost <a href="http://127.0.0.1:8611">http://127.0.0.1:8611</a> is one of default servers in Nucleome Browser. If user starts a data server in localhost and the port is the default 8611, you can just reload server content or add new genome browser panel after the local server start, the custom data will show up in this genome browser config panel.</p>
+</blockquote>
+<p>If the data server location is differnt from the URL mentioned above, you’d have to add it manually to <a href="https://vis.nucleome.org">Nucleome Browser</a>.</p>
+<blockquote>
+<p>If you don’t have a genome browser panel to start with, please add one at first. The add button is in submenu of panels in the menu bar. After clicking it, please follow this little guide: “Click Config tracks → Click Config Servers → Input Server URI and any Id you’d like into table → Click Refresh Button to reload”. This <a href="https://nucleome.github.io/image/configServers.png">sceenshot</a> shows the config window.</p>
+</blockquote>
+<blockquote>
+<p>If you open a new genome browser panel, it will automatically copy the previous configurations.</p>
+</blockquote>
+<h2 id="more-functions-and-alternative-ways">More functions and alternative ways</h2>
+<p>This section covers more functions and alternative ways to set up the server, including permission management and password protection.</p>
+<h3 id="install-by-compling-the-source-code">Install by compling the source code</h3>
+<p>Users can download the compiled binaries for Linux, Mac and Windows OS as described in the quick start. However, if the binary is not working or you are trying to install the most recent experimental version, you can alway compile from the source code. NucleServer is implemented in <a href="https://golang.org">GoLang</a> ( version &gt; 1.11 ) and hosted on Github. With the Golang environment installed, the source code can be cloned simply by the following command.</p>
+<pre><code>go get -u github.com/nucleome/nucleserver
+</code></pre>
+<p>Please note the dependent golang packages must be installed before compiling the code. The following command will install one of them.</p>
+<pre><code>go get -u github.com/nucleome/nucledata
+</code></pre>
+<p>After all packages installed, the following command will compile the code in the source folder.</p>
+<pre><code>go build
+</code></pre>
+<h3 id="using-google-sheet-for-permission-management">Using Google sheet for permission management</h3>
+<p>In addition to the excel tables, user can also use a google sheet directly for configuration. We recommand this approach as it takes advantage of the google permission management and  it is an easier way to share the configuration to others with less headache. If you own or have access to a google sheet, the server can be started with its <strong>Google Sheet ID</strong>.</p>
+<p><code>nucleserver start -i 1nJwOozr4EL4gnx37hzF2Jmv-HPsgFMA9jN-lbUj1GvM</code></p>
+<blockquote>
+<p>The <strong>Google Sheet ID</strong> can be found as part of the url in the google sheet webpage. It is indicated by a blue background in this <a href="https://nucleome.github.io/image/google_sheet_id_demo.png">demo image</a>.</p>
+</blockquote>
+<p>If this is the <strong>first time</strong> you are using <code>nucleserver</code> with google sheet, it will firstly print a web link in terminal, asking for permissions. Please visit this link in a browser and grant the permissions. Google should provide you a token in respond. Please then enter this token in the terminal. As the result,  a credential token will be stored in <code>[Your Home Dir]/.nucle/credentials/gsheet.json</code>.</p>
+<h3 id="start-the-server">Start the server</h3>
+<p>The command to start the server in Mac OS or Linux is the following.</p>
+<pre class=" language-shell"><code class="prism  language-shell">./nucleserver start -i [google sheet id or excel file] -p [port default:8611]
+</code></pre>
+<p>The command to start the server in Windows is the following.</p>
+<pre class=" language-shell"><code class="prism  language-shell">nucleserver.exe start -i [google sheet id or excel file] -p [port default:8611]
+</code></pre>
+<h3 id="config-file">Config file</h3>
+<p>The config file can either be an Excel file or a Google Sheets. The file must contain two sheets, namely “Config” and “Index”.</p>
+<ul>
+<li>
+<p>The “Config” sheet stores the configuration variable values. Currently, <code>root</code> variable is the only variable needed for NucleServer. It is the root path for you store all track data files. (As a result, user can easily migrating data between servers.) All the URI/PATH in other sheets will be relative to this <code>root</code>. The only exception is for URIs starting with <code>http</code> or <code>https</code>.You can also find an example in this <a href="https://nucleome.github.io/image/sheetConfig.png">screenshot</a>.</p>
+</li>
+<li>
+<p>The “Index” sheet stores the configuration information for organizing the track groups, each with a unique sheet title. The sheet titles not present in Index sheet will be ignored by the browser. The Name and Value columns define the corresponding columns in the track group sheet. Again, you can also find an example in this <a href="https://nucleome.github.io/image/sheetIndex.png">screenshot</a>.</p>
+</li>
+<li>
+<p>The track group sheets provide information such as file location(uri), short label(shortLabel), long label(longLabel) and weblink(metaLink) for the tracks. As mentioned, these data files can be files in a local personal PC/server or an web link pointing to a remote server.</p>
+</li>
+<li>
+<p>If the track group sheet contains four columns, the columns name should be “shortLabel”, “uri”, “metaLink” and "longLabel”. The corresponding column header in the “Index” sheet should be “A” and “B,C,D”, so that they are defined accordlingly. <a href="https://nucleome.github.io/image/sheetData4.png">screenshot demo</a></p>
+</li>
+<li>
+<p>If using two columns, the column name can be any string user defined. Please just filled the “Index” sheet accordingly.<a href="https://nucleome.github.io/image/sheetSimpleData.png">screenshot demo</a></p>
+</li>
+</ul>
+<blockquote>
+<p>In sheet “Index”, those entries which Id starts with “#” will be ignored when loading. Column “Type” is designed for future data type. Currently, please just use “track” in this column. It support bigWig, bigBed and .hic format files.</p>
+</blockquote>
+<h3 id="host-private-and-public-data-for-community-in-https">Host private and public data for community in “HTTPS”</h3>
+<p>We highly recommend the host servers to support “HTTPS”, as it promote the browser’s functionality in progressive web application, google based permission management and session storage. If the data is sensitive, you can also host it locally. It is then not accessible by other users or web application administrator. In addition, we also provides a simple password protection option (currently experimental) for user access data in internet. As demostrated below, user can add a password when starting the server.</p>
+<pre><code>nucleserver start -i nucle.xlsx -c password
+</code></pre>
+<p>As an result, only users login with the password through the following webpage can access the hosted data.</p>
+<pre><code>http://yourwebsite:8611/main.html
+</code></pre>
+<h3 id="converting-local-data-server-to-the-public-using-reverse-proxy">Converting local data server to the public using reverse Proxy</h3>
+<p>A Reverse Proxy implemented in GoLang <a href="https://traefik.io/">Traefik</a> is recommended for convert local data service to https global data service.  <a href="https://www.nginx.com/">Nginx</a> is also working here.</p>
+<h3 id="using-reverse-proxy-to-host-more-data-services-in-same-domain">Using Reverse Proxy to host more data services in same domain</h3>
+<p>Nucleome Browser default data services are “/d/portal” and “<a href="https://127.0.0.1:8611">https://127.0.0.1:8611</a>”.<br>
+Nucleome Browser supports URL like “<a href="https://youdomain.com/path/to/dataservice">https://youdomain.com/path/to/dataservice</a>”.</p>
+<h3 id="build-an-entry-to-a-nucleome-browser-with-customized-data-services.">Build an Entry to A Nucleome Browser with customized data services.</h3>
+<p>Easiest way is configure your panel and save as a session to your google sheet.<br>
+Copy this saved session to a Google Sheet with shareable view link.<br>
+The entry will be on the following link.</p>
+<pre><code>http(s)://vis.nucleome.org/v1/pub.html?sheetid=[your public google sheet id]
+</code></pre>
+<h3 id="public-data-support">Public data support</h3>
+<p>If possible, we highly recommend users to provide a google sheet with publicly accessable web links. Then, other users can start a local service with them.  It would be even better if data hosters can index the data files and provide tar balls to download.</p>
+<h3 id="local-index-for-remote-data">Local index for remote data</h3>
+<p>If acessing data from other servers such as ENCODE, NucleServer will fetch index from the web link and store them locally, which is on average 1% of the original data file in size. It is stored in <code>[Your Home Dir]/.nucle/index</code>. As a result, while browsing the genome, NucleServer will fetch the corresponding data from ENCODE each time based on the index.</p>
+<h2 id="todos">TODOs</h2>
+<ul>
+<li>Supporting Large Set Data Host</li>
+</ul>
+
+    </div>
+  </div>
+</body>
+
+</html>
